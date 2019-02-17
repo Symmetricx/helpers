@@ -14,6 +14,11 @@ class DummyClass extends Controller
 {
     use HasResourceActions;
 
+    private $model_name;
+
+    function __construct() {
+        $this->model_name = (new DummyModel)->getTable();
+    }
     /**
      * Index interface.
      *
@@ -23,8 +28,8 @@ class DummyClass extends Controller
     public function index(Content $content)
     {
         return $content
-            ->header('Index')
-            ->description('description')
+            ->header(trans_choice("site.{$this->model_name}",3))
+            ->description(trans('admin.list'))
             ->body($this->grid());
     }
 
@@ -38,8 +43,8 @@ class DummyClass extends Controller
     public function show($id, Content $content)
     {
         return $content
-            ->header('Detail')
-            ->description('description')
+            ->header(trans_choice("site.{$this->model_name}",1))
+            ->description(trans('admin.details'))
             ->body($this->detail($id));
     }
 
@@ -53,8 +58,8 @@ class DummyClass extends Controller
     public function edit($id, Content $content)
     {
         return $content
-            ->header('Edit')
-            ->description('description')
+            ->header(trans_choice("site.{$this->model_name}",1))
+            ->description(trans('admin.edit'))
             ->body($this->form()->edit($id));
     }
 
@@ -67,8 +72,8 @@ class DummyClass extends Controller
     public function create(Content $content)
     {
         return $content
-            ->header('Create')
-            ->description('description')
+            ->header(trans_choice("site.{$this->model_name}",1))
+            ->description(trans('admin.create'))
             ->body($this->form());
     }
 
@@ -79,12 +84,25 @@ class DummyClass extends Controller
      */
     protected function grid()
     {
+        $l_model_name = $this->model_name;
         $grid = new Grid(new DummyModel);
 
-        $grid->id('ID');
-        $grid->created_at('Created at');
-        $grid->updated_at('Updated at');
+        $grid->id(trans('admin.ID'));
 
+        $grid->created_at(trans('admin.created_at'));
+        $grid->updated_at(trans('admin.updated_at'));
+
+        $grid->actions(function ($actions) use($l_model_name) {
+            if(!model_check_permission_edit($l_model_name)){
+                $actions->disableEdit();
+            }
+            if(!model_check_permission_delete($l_model_name)){
+                $actions->disableDelete();
+            }
+            if(!model_check_permission_show($l_model_name)){
+                $actions->disableView();
+            }
+        });
         return $grid;
     }
 
@@ -96,11 +114,25 @@ class DummyClass extends Controller
      */
     protected function detail($id)
     {
+        $l_model_name = $this->model_name;
         $show = new Show(DummyModel::findOrFail($id));
 
-        $show->id('ID');
-        $show->created_at('Created at');
-        $show->updated_at('Updated at');
+        $show->id(trans('admin.ID'));
+
+        $show->created_at(trans('admin.created_at'));
+        $show->updated_at(trans('admin.updated_at'));
+
+        $show->panel()->tools(function($tools) use($l_model_name){
+            if(!model_check_permission_list($l_model_name)){
+                $tools->disableList();
+            }
+            if(!model_check_permission_delete($l_model_name)){
+                $tools->disableDelete();
+            }
+            if(!model_check_permission_edit($l_model_name)){
+                $tools->disableEdit();
+            }
+        });
 
         return $show;
     }
@@ -112,11 +144,52 @@ class DummyClass extends Controller
      */
     protected function form()
     {
+        $l_model_name = $this->model_name;
         $form = new Form(new DummyModel);
 
-        $form->display('ID');
-        $form->display('Created at');
-        $form->display('Updated at');
+        $form->display('ID',trans('admin.ID'));
+
+        $form->display('created_at', trans('admin.created_at'));
+        $form->display('updated_at', trans('admin.updated_at'));
+
+        $form->tools(function (Form\Tools $tools) use($l_model_name){
+
+            if(!model_check_permission_list($l_model_name)){
+                $tools->disableList();
+            }
+
+            if(!model_check_permission_delete($l_model_name)){
+                $tools->disableDelete();
+            }
+
+            if(!model_check_permission_show($l_model_name)){
+                $tools->disableView();
+            }
+
+        });
+
+        $form->footer(function ($footer) use($l_model_name){
+
+            if(!model_check_permission_create($l_model_name) && !model_check_permission_edit($l_model_name)){
+                // disable reset btn
+                $footer->disableReset();
+
+                // disable submit btn
+                $footer->disableSubmit();
+            }
+
+            if(!model_check_permission_show($l_model_name)){
+                $footer->disableViewCheck();
+            }
+
+            if(!model_check_permission_edit($l_model_name)){
+                $footer->disableEditingCheck();
+            }
+
+            if(!model_check_permission_create($l_model_name)){
+                $footer->disableCreatingCheck();
+            }
+        });
 
         return $form;
     }
