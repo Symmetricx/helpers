@@ -1,0 +1,81 @@
+<?php
+
+use DummyModelNamespace;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB; 
+use Encore\Admin\Auth\Database\Role;
+use Encore\Admin\Auth\Database\Permission;
+use Encore\Admin\Auth\Database\Menu;
+
+class DummyClass extends Seeder
+{
+    /**
+     * Run the database seeds.
+     *
+     * @return void
+     */
+    public function run()
+    {
+        
+        $table_name = (new DummyModel)->getTable();
+        $model_name = 'DummyModel';
+      
+        DB::table('admin_menu')->insert([
+            'parent_id' => 0,
+            'order' => 12,
+            'title' => $table_name,
+            'uri' => "/${table_name}",
+            'icon' => 'fa-building',
+        ]);
+
+        // create a role.
+        Role::create([
+            'name' => $model_name,
+            'slug' => $model_name,
+        ]);
+
+        //create a permission
+        Permission::insert([
+            [
+                'name'        => "All ${table_name} permission",
+                'slug'        => "${table_name}",
+                'http_method' => "",
+                'http_path'   => "/${table_name}*",
+            ],
+            [
+                'name'        => "${table_name} create",
+                'slug'        => "${table_name}-create",
+                'http_method' => "POST,GET",
+                'http_path'   => "/${table_name}/*/create",
+            ],
+            [
+                'name'        => "${table_name} edit",
+                'slug'        => "${table_name}-edit",
+                'http_method' => "PUT,GET",
+                'http_path'   => "/${table_name}/*/edit",
+            ],
+            [
+                'name'        => "${table_name} details",
+                'slug'        => "${table_name}-details",
+                'http_method' => "GET",
+                'http_path'   => "/${table_name}/*",
+            ],
+            [
+                'name'        => "${table_name} delete",
+                'slug'        => "${table_name}-delete",
+                'http_method' => "DELETE",
+                'http_path'   => "/${table_name}/*",
+            ],
+            [
+                'name'        => "${table_name} list",
+                'slug'        => "${table_name}-list",
+                'http_method' => "GET",
+                'http_path'   => "/${table_name}",
+            ],
+        ]);
+
+        Role::where('slug',$model_name)->first()->permissions()->save(Permission::where('slug',$table_name)->first());
+
+        Menu::where('title',$table_name)->first()->roles()->save(Role::where('slug',$model_name)->first());
+    }
+}

@@ -41,6 +41,14 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="inputControllerName" class="col-sm-1 control-label">seeder</label>
+
+                    <div class="col-sm-4">
+                        <input type="text" name="seeder_name" class="form-control" id="inputControllerName" placeholder="controller" value="{{ old('seeder_name', "database\\seeds\\") }}">
+                    </div>
+                </div>
+
+                <div class="form-group">
                     <div class="col-sm-offset-1 col-sm-11">
                         <div class="checkbox">
                             <label>
@@ -54,6 +62,9 @@
                             </label>
                             <label>
                                 <input type="checkbox" checked value="migrate" name="create[]" /> Run migrate
+                            </label>
+                            <label>
+                                <input type="checkbox" checked value="seed" name="create[]" /> Create seeds
                             </label>
                         </div>
                     </div>

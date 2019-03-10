@@ -44,7 +44,7 @@ class DummyClass extends Controller
     {
         return $content
             ->header(trans_choice("site.{$this->model_name}",1))
-            ->description(trans('admin.details'))
+            ->description(trans('admin.detail'))
             ->body($this->detail($id));
     }
 
@@ -60,7 +60,7 @@ class DummyClass extends Controller
         return $content
             ->header(trans_choice("site.{$this->model_name}",1))
             ->description(trans('admin.edit'))
-            ->body($this->form()->edit($id));
+            ->body($this->form($id)->edit($id));
     }
 
     /**
@@ -142,7 +142,7 @@ class DummyClass extends Controller
      *
      * @return Form
      */
-    protected function form()
+    protected function form($id = null)
     {
         $l_model_name = $this->model_name;
         $form = new Form(new DummyModel);

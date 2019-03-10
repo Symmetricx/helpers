@@ -3,6 +3,7 @@
 namespace Encore\Admin\Helpers\Controllers;
 
 use Encore\Admin\Facades\Admin;
+use Encore\Admin\Helpers\Scaffold\SeederCreator;
 use Encore\Admin\Helpers\Scaffold\ControllerCreator;
 use Encore\Admin\Helpers\Scaffold\MigrationCreator;
 use Encore\Admin\Helpers\Scaffold\ModelCreator;
@@ -69,12 +70,18 @@ class ScaffoldController extends Controller
                     $request->get('soft_deletes') == 'on'
                 )->create($migrationName, database_path('migrations'), $request->get('table_name'));
             }
+            // 4. Create migration.
+            if (in_array('seed', $request->get('create'))) {
+                $paths['seeds'] = (new SeederCreator($request->get('seeder_name'), $request->get('table_name')))
+                    ->create($request->get('model_name'));
+            }
 
-            // 4. Run migrate.
+            // 5. Run migrate.
             if (in_array('migrate', $request->get('create'))) {
                 Artisan::call('migrate');
                 $message = Artisan::output();
             }
+
         } catch (\Exception $exception) {
 
             // Delete generated files if exception thrown.
